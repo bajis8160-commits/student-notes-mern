@@ -5,7 +5,7 @@ export default function App() {
   const [form, setForm] = useState({ subject: '', title: '', content: '', fileName: '', fileData: '' });
   const API = (import.meta.env.VITE_API_URL || 'https://student-notes-mern.onrender.com') + '/notes';
 
-  const load = () => fetch(API).then((r) => r.json()).then(setNotes);
+  const load = () => fetch(API).then((r) => r.json()).then((d) => Array.isArray(d) && setNotes(d)).catch(() => {});
   useEffect(() => { load(); }, []);
 
   const handleFile = (e) => {
@@ -18,18 +18,17 @@ export default function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
-    });
+    setNotes((prev) => [{ ...form, _id: Date.now().toString() }, ...prev]);
     setForm({ subject: '', title: '', content: '', fileName: '', fileData: '' });
-    load();
+    try {
+      await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+      load();
+    } catch (err) {}
   };
 
   const handleDelete = async (id) => {
-    await fetch(`${API}/${id}`, { method: 'DELETE' });
-    load();
+    setNotes((prev) => prev.filter((n) => n._id !== id));
+    try { await fetch(`${API}/${id}`, { method: 'DELETE' }); } catch (err) {}
   };
 
   return (
@@ -54,11 +53,7 @@ export default function App() {
             <span style={{ fontSize: '11px', background: '#eee', padding: '2px 5px', borderRadius: '3px' }}>{n.subject}</span>
             <h4 style={{ margin: '6px 0' }}>{n.title}</h4>
             <p style={{ margin: '4px 0', color: '#555' }}>{n.content}</p>
-            {n.fileData && (
-              <p style={{ margin: '6px 0' }}>
-                <a href={n.fileData} download={n.fileName} style={{ color: '#007bff', fontWeight: 'bold' }}>📥 Download {n.fileName}</a>
-              </p>
-            )}
+            {n.fileData && <p style={{ margin: '6px 0' }}><a href={n.fileData} download={n.fileName} style={{ color: '#007bff', fontWeight: 'bold' }}>📥 Download {n.fileName}</a></p>}
             <button onClick={() => handleDelete(n._id)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', padding: 0 }}>Delete</button>
           </div>
         ))}
