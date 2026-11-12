@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 export default function App() {
   const [notes, setNotes] = useState([]);
   const [form, setForm] = useState({ subject: '', title: '', content: '', fileName: '', fileData: '' });
-  const API = (import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/notes';
+  const API = (import.meta.env.VITE_API_URL || 'https://student-notes-mern.onrender.com') + '/notes';
 
   const load = () => fetch(API).then((r) => r.json()).then(setNotes);
   useEffect(() => { load(); }, []);
