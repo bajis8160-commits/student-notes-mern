@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 export default function App() {
   const [notes, setNotes] = useState([]);
   const [form, setForm] = useState({ subject: '', title: '', content: '' });
-  const API = 'http://localhost:5000/notes';
+  const API = (import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/notes';
 
   const load = () => fetch(API).then((res) => res.json()).then(setNotes);
   useEffect(() => { load(); }, []);
